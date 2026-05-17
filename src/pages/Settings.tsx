@@ -32,7 +32,6 @@ export function Settings() {
         method: 'PUT',
         body: JSON.stringify({ settings: editing }),
       })
-      setSettings(editing)
       showToast('Settings saved')
     } catch (err: unknown) {
       showToast(err instanceof Error ? err.message : 'Failed to save settings')
