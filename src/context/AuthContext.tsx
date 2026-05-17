@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react'
 import { startAuthentication, startRegistration } from '@simplewebauthn/browser'
 
-const API_BASE = import.meta.env.VITE_API_BASE || 'https://naked-glados.com/api'
+const API_BASE = (import.meta as unknown as { env: { VITE_API_BASE: string } }).env.VITE_API_BASE || 'https://naked-glados.com/api'
 
 interface User {
   id: string
@@ -60,7 +60,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!optionsRes.ok) throw new Error('Login options failed')
     const options = await optionsRes.json()
 
-    const assertion = await startAuthentication({ optionsJSON: options })
+    const assertion = await startAuthentication(options)
 
     const verifyRes = await fetch(`${API_BASE}/auth/login/verify`, {
       method: 'POST',
@@ -88,7 +88,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     const options = await optionsRes.json()
 
-    const attestation = await startRegistration({ optionsJSON: options })
+    const attestation = await startRegistration(options)
 
     const verifyRes = await fetch(`${API_BASE}/auth/register/verify`, {
       method: 'POST',

@@ -9,7 +9,7 @@ export function ServerControl() {
 
   const fetchStatus = async () => {
     try {
-      const data = await api('/status')
+      const data = await api<{ online: boolean; pod?: { running: boolean; phase: string } }>('/status')
       setStatus(data)
     } catch (err) {
       console.error(err)

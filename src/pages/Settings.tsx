@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { api } from '../lib/api'
 
 export function Settings() {
-  const [settings, setSettings] = useState<Record<string, string>>({})
   const [editing, setEditing] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(true)
   const [toast, setToast] = useState<string | null>(null)
@@ -10,7 +9,6 @@ export function Settings() {
   const fetchSettings = async () => {
     try {
       const data = await api<{ settings: Record<string, string> }>('/settings')
-      setSettings(data.settings)
       setEditing(data.settings)
     } catch (err) {
       console.error(err)
