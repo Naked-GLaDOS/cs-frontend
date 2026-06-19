@@ -1,32 +1,18 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 
 export function Gateway() {
+  const { user, loading } = useAuth()
   const navigate = useNavigate()
-  const [denied, setDenied] = useState(false)
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search)
-    const urlToken = params.get('auth_token') || params.get('token')
-    const storedToken = localStorage.getItem('token')
-    const referrer = document.referrer
-    const fromDashboard = referrer.includes('naked-glados.com') || referrer.includes('localhost')
-
-    if (urlToken) {
-      localStorage.setItem('token', urlToken)
-      localStorage.setItem('glados_token', urlToken)
-      window.history.replaceState({}, document.title, window.location.pathname)
+    if (!loading && user) {
       navigate('/dashboard', { replace: true })
-    } else if (storedToken) {
-      navigate('/dashboard', { replace: true })
-    } else if (!fromDashboard) {
-      setDenied(true)
-    } else {
-      window.location.href = 'https://naked-glados.com'
     }
-  }, [navigate])
+  }, [loading, user, navigate])
 
-  if (denied) {
+  if (!loading && !user) {
     return (
       <div className="login-container">
         <div className="login-card" style={{ borderColor: 'var(--danger)' }}>

@@ -10,6 +10,7 @@ import { GameModes } from './pages/GameModes'
 import { Settings } from './pages/Settings'
 import { ServerControl } from './pages/ServerControl'
 
+
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth()
   if (loading) return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', color: 'var(--text-secondary)' }}>Establishing uplink...</div>
