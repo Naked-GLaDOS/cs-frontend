@@ -40,9 +40,60 @@ function isTokenExpired(token: string): boolean {
   return Date.now() / 1000 > exp
 }
 
+const EXPIRY_WARN_SECONDS = 5 * 60 // 5 minutes
+const ACTIVITY_DEBOUNCE_MS = 60_000 // 60 seconds
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
+
+  // Activity listener: debounced at 60s. Clears session if token is expired
+  // so the user sees the login page instead of getting silent 401s.
+  useEffect(() => {
+    let lastCheck = 0
+
+    const handleActivity = () => {
+      const now = Date.now()
+      if (now - lastCheck < ACTIVITY_DEBOUNCE_MS) return
+      lastCheck = now
+
+      const token = localStorage.getItem('token')
+      if (!token) return
+
+      const exp = getTokenExpiry(token)
+      if (!exp) return
+
+      const secondsLeft = exp - Date.now() / 1000
+
+      if (secondsLeft <= 0) {
+        // Token already expired — clear it and redirect
+        localStorage.removeItem('token')
+        localStorage.removeItem('glados_token')
+        window.location.href = '/'
+        return
+      }
+
+      if (secondsLeft <= EXPIRY_WARN_SECONDS) {
+        // Token expiring soon — attempt server-side re-validation to extend
+        // (no dedicated refresh endpoint exists; re-validates to catch early revocations)
+        fetch(`${API_BASE}/users/me`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }).catch(() => {
+          // If re-validation fails, clear and redirect
+          localStorage.removeItem('token')
+          localStorage.removeItem('glados_token')
+          window.location.href = '/'
+        })
+      }
+    }
+
+    window.addEventListener('mousemove', handleActivity, { passive: true })
+    window.addEventListener('keydown', handleActivity, { passive: true })
+    return () => {
+      window.removeEventListener('mousemove', handleActivity)
+      window.removeEventListener('keydown', handleActivity)
+    }
+  }, [])
 
   useEffect(() => {
     const init = async () => {

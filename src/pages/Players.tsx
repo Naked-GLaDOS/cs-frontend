@@ -9,10 +9,13 @@ interface Player {
   time: string
 }
 
+const PAGE_SIZE = 20
+
 export function Players() {
   const [players, setPlayers] = useState<Player[]>([])
   const [loading, setLoading] = useState(true)
   const [toast, setToast] = useState<string | null>(null)
+  const [page, setPage] = useState(0)
 
   const fetchPlayers = async () => {
     try {
@@ -36,7 +39,8 @@ export function Players() {
     setTimeout(() => setToast(null), 3000)
   }
 
-  const kickPlayer = async (userId: number) => {
+  const kickPlayer = async (userId: number, name: string) => {
+    if (!window.confirm(`Kick player ${name}?`)) return
     const reason = prompt('Kick reason (optional):')
     try {
       await api(`/players/${userId}/kick`, {
@@ -50,7 +54,8 @@ export function Players() {
     }
   }
 
-  const banPlayer = async (userId: number) => {
+  const banPlayer = async (userId: number, name: string) => {
+    if (!window.confirm(`Ban player ${name}?`)) return
     const duration = prompt('Ban duration in minutes (0 = permanent):', '0')
     if (duration === null) return
     const reason = prompt('Ban reason (optional):')
@@ -65,6 +70,9 @@ export function Players() {
       showToast(err instanceof Error ? err.message : 'Failed to ban')
     }
   }
+
+  const totalPages = Math.max(1, Math.ceil(players.length / PAGE_SIZE))
+  const pagePlayers = players.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
 
   if (loading) return <p>Loading players...</p>
 
@@ -88,14 +96,14 @@ export function Players() {
             </tr>
           </thead>
           <tbody>
-            {players.length === 0 ? (
+            {pagePlayers.length === 0 ? (
               <tr>
                 <td colSpan={6} style={{ textAlign: 'center', color: 'var(--text-muted)' }}>
                   No players connected
                 </td>
               </tr>
             ) : (
-              players.map(player => (
+              pagePlayers.map(player => (
                 <tr key={player.id}>
                   <td>{player.id}</td>
                   <td>{player.name}</td>
@@ -103,10 +111,10 @@ export function Players() {
                   <td>{player.score}</td>
                   <td>{player.time}</td>
                   <td>
-                    <button className="btn btn-sm btn-secondary" onClick={() => kickPlayer(player.id)} style={{ marginRight: '5px' }}>
+                    <button className="btn btn-sm btn-secondary" onClick={() => kickPlayer(player.id, player.name)} style={{ marginRight: '5px' }}>
                       Kick
                     </button>
-                    <button className="btn btn-sm btn-danger" onClick={() => banPlayer(player.id)}>
+                    <button className="btn btn-sm btn-danger" onClick={() => banPlayer(player.id, player.name)}>
                       Ban
                     </button>
                   </td>
@@ -115,6 +123,26 @@ export function Players() {
             )}
           </tbody>
         </table>
+
+        {players.length > PAGE_SIZE && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '12px' }}>
+            <button
+              className="btn btn-sm btn-secondary"
+              onClick={() => setPage(p => p - 1)}
+              disabled={page === 0}
+            >
+              Previous
+            </button>
+            <span>Page {page + 1} of {totalPages}</span>
+            <button
+              className="btn btn-sm btn-secondary"
+              onClick={() => setPage(p => p + 1)}
+              disabled={page >= totalPages - 1}
+            >
+              Next
+            </button>
+          </div>
+        )}
       </div>
 
       {toast && <div className={`toast ${toast.includes('Failed') ? 'error' : 'success'}`}>{toast}</div>}

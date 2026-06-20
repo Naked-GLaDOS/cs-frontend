@@ -1,14 +1,25 @@
 import { Outlet, Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import {
+  LayoutDashboard,
+  Terminal,
+  Users,
+  Map,
+  Gamepad2,
+  Settings,
+  Server,
+  LogOut,
+  Shield,
+} from 'lucide-react'
 
 const navItems = [
-  { path: '/dashboard', label: 'Dashboard', icon: '📊' },
-  { path: '/console', label: 'Console', icon: '💻' },
-  { path: '/players', label: 'Players', icon: '👥' },
-  { path: '/maps', label: 'Maps', icon: '🗺️' },
-  { path: '/gamemodes', label: 'Game Modes', icon: '🎮' },
-  { path: '/settings', label: 'Settings', icon: '⚙️' },
-  { path: '/server', label: 'Server', icon: '🖥️' },
+  { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { path: '/console', label: 'Console', icon: Terminal },
+  { path: '/players', label: 'Players', icon: Users },
+  { path: '/maps', label: 'Maps', icon: Map },
+  { path: '/gamemodes', label: 'Game Modes', icon: Gamepad2 },
+  { path: '/settings', label: 'Settings', icon: Settings },
+  { path: '/server', label: 'Server', icon: Server },
 ]
 
 export function Layout() {
@@ -19,18 +30,21 @@ export function Layout() {
     <div className="app">
       <aside className="sidebar">
         <div className="sidebar-header">
-          <h1>CS2 Control</h1>
+          <div className="sidebar-brand">
+            <Shield size={22} />
+            <span>CS2 Control</span>
+          </div>
           <p>NakedGLaDOS</p>
         </div>
         <nav className="sidebar-nav">
-          {navItems.map(item => (
+          {navItems.map(({ path, label, icon: Icon }) => (
             <Link
-              key={item.path}
-              to={item.path}
-              className={`nav-item ${location.pathname === item.path ? 'active' : ''}`}
+              key={path}
+              to={path}
+              className={`nav-item ${location.pathname === path ? 'active' : ''}`}
             >
-              <span>{item.icon}</span>
-              <span>{item.label}</span>
+              <Icon size={18} />
+              <span>{label}</span>
             </Link>
           ))}
         </nav>
@@ -41,7 +55,9 @@ export function Layout() {
               <div className="user-email">{user?.email}</div>
               <div className="user-role">{user?.role}</div>
             </div>
-            <button className="btn btn-sm btn-secondary" onClick={logout}>⏻</button>
+            <button className="btn btn-sm btn-secondary btn-icon-only" onClick={logout} title="Sign out">
+              <LogOut size={14} />
+            </button>
           </div>
         </div>
       </aside>

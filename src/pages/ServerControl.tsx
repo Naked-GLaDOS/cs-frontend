@@ -30,6 +30,7 @@ export function ServerControl() {
   }
 
   const serverAction = async (action: string, endpoint: string) => {
+    if (!window.confirm(`${action} the server?`)) return
     setActionLoading(action)
     try {
       const data = await api(endpoint, { method: 'POST' })
